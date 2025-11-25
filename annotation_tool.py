@@ -20,6 +20,17 @@ from typing import List, Dict, Tuple, Optional, Set
 import shutil
 import math
 
+# Fix Windows console encoding for Unicode/emoji characters
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except (AttributeError, TypeError):
+        # Python < 3.7 or reconfigure not available
+        import codecs
+        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, errors='replace')
+        sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, errors='replace')
+
 import cv2
 import numpy as np
 
@@ -733,7 +744,19 @@ def create_annotation_gui():
     if class_manager is None:
         class_manager = ClassManager()
     
-    with gr.Blocks(title="Manual Annotation Tool v3", theme=gr.themes.Soft()) as demo:
+    # Gradio version compatibility - try with theme, fallback without
+    try:
+        # Try Gradio 4.x / 5.x style
+        blocks_kwargs = {"title": "Manual Annotation Tool v3", "theme": gr.themes.Soft()}
+        demo = gr.Blocks(**blocks_kwargs)
+    except (TypeError, AttributeError):
+        # Fallback for older/newer versions
+        try:
+            demo = gr.Blocks(title="Manual Annotation Tool v3")
+        except TypeError:
+            demo = gr.Blocks()
+    
+    with demo:
         
         gr.Markdown("""
         # 🎯 Manual Annotation Tool v3
