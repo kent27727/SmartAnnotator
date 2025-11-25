@@ -363,10 +363,6 @@ def run_auto_annotation():
     # Update config
     config.set_active_project(project_manager.current_project)
     
-    from auto_annotate import AutoAnnotator
-    
-    annotator = AutoAnnotator(model_path)
-    
     # Raw images directory
     raw_dir = project_path / "raw_images"
     
@@ -375,23 +371,66 @@ def run_auto_annotation():
         print(f"   Place images in: {raw_dir}")
         return
     
-    # Annotation settings
+    # Annotation settings - ASK USER
     ann_cfg = cfg.get("annotation", {})
+    default_conf = ann_cfg.get('confidence_threshold', 0.5)
+    default_min_det = ann_cfg.get('min_detections', 1)
+    
     print(f"\n⚙️ Annotation Settings:")
-    print(f"   Confidence Threshold: {ann_cfg.get('confidence_threshold', 0.5)}")
-    print(f"   Min Detections: {ann_cfg.get('min_detections', 2)}")
     print(f"   Source: {raw_dir}")
     print(f"   Target: {project_path / 'auto_annotations'}")
     
-    response = input("\nStart? (y/n): ")
+    # Ask for confidence threshold
+    print(f"\n📊 Confidence Threshold (0.0 - 1.0)")
+    print(f"   Higher = fewer but more accurate detections")
+    conf_input = input(f"   Confidence threshold [{default_conf}]: ").strip()
+    if conf_input:
+        try:
+            confidence_threshold = float(conf_input)
+            confidence_threshold = max(0.1, min(1.0, confidence_threshold))
+        except ValueError:
+            confidence_threshold = default_conf
+    else:
+        confidence_threshold = default_conf
+    
+    # Ask for minimum detections
+    print(f"\n🔢 Minimum Detections per Image")
+    print(f"   How many objects must be detected for an image to be valid?")
+    print(f"   Example: 1 = at least 1 detection required")
+    print(f"   Example: 2 = at least 2 detections required")
+    min_det_input = input(f"   Minimum detections [{default_min_det}]: ").strip()
+    if min_det_input:
+        try:
+            min_detections = int(min_det_input)
+            min_detections = max(1, min_detections)  # At least 1
+        except ValueError:
+            min_detections = default_min_det
+    else:
+        min_detections = default_min_det
+    
+    # Show final settings
+    print(f"\n✅ Final Settings:")
+    print(f"   Confidence Threshold: {confidence_threshold}")
+    print(f"   Min Detections: {min_detections}")
+    
+    response = input("\nStart auto-annotation? (y/n): ")
     
     if response.lower() == 'y':
+        from auto_annotate import AutoAnnotator
+        
+        annotator = AutoAnnotator(model_path, min_detections=min_detections)
+        
         annotator.annotate_batch(
             images_dir=raw_dir,
             output_dir=project_path / "auto_annotations",
-            confidence_threshold=ann_cfg.get('confidence_threshold', 0.5),
+            confidence_threshold=confidence_threshold,
             save_visualizations=True
         )
+        
+        # Update project config with new values
+        ann_cfg['confidence_threshold'] = confidence_threshold
+        ann_cfg['min_detections'] = min_detections
+        project_manager.update_project_config({"annotation": ann_cfg})
 
 
 def prepare_final_dataset():
