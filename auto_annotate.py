@@ -423,7 +423,7 @@ class SemiSupervisedPipeline:
             initial_epochs: Initial training epochs
             confidence_threshold: Auto-annotation confidence threshold
         """
-        from train_model import DarkCircleTrainer
+        from train_model import ModelTrainer
         
         raw_images_dir = raw_images_dir or config.RAW_IMAGES_DIR
         initial_epochs = initial_epochs or config.INITIAL_TRAINING_EPOCHS
@@ -435,7 +435,7 @@ class SemiSupervisedPipeline:
         
         # 1. Prepare training data
         print("\n📌 STEP 1: Prepare training data")
-        self.trainer = DarkCircleTrainer()
+        self.trainer = ModelTrainer()
         success = self.trainer.prepare_training_data(
             roboflow_export_dir=roboflow_export_dir
         )

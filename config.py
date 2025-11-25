@@ -19,8 +19,8 @@ PROJECT_DIR = Path(__file__).parent
 # Projects directory (new system)
 PROJECTS_DIR = PROJECT_DIR / "projects"
 
-# Raw image dataset (unlabeled) - default
-RAW_IMAGES_DIR = Path(r"C:\Users\enes1\OneDrive\Desktop\darkcircledataset")
+# Raw image dataset (unlabeled) - default (will be overwritten by project settings)
+RAW_IMAGES_DIR = PROJECT_DIR / "raw_images"
 
 # Manual labeled data (legacy compatibility)
 MANUAL_ANNOTATIONS_DIR = PROJECT_DIR / "manual_annotations"

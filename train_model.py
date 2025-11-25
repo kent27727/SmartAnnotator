@@ -27,8 +27,8 @@ from utils import (
 )
 
 
-class DarkCircleTrainer:
-    """Dark Circle segmentation model trainer"""
+class ModelTrainer:
+    """YOLO model trainer for detection/segmentation tasks"""
     
     def __init__(self):
         self.model = None
@@ -311,7 +311,7 @@ def main():
     print("🎯 AUTO-ANNOTATION TOOL - MODEL TRAINING")
     print("="*60)
     
-    trainer = DarkCircleTrainer()
+    trainer = ModelTrainer()
     
     # Get Roboflow export directory from user
     print("\n📂 Specify your Roboflow export directory.")

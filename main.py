@@ -290,12 +290,12 @@ def train_initial_model():
             print(f"   Import data first: {manual_dir}")
             return
     
-    from train_model import DarkCircleTrainer
+    from train_model import ModelTrainer
     
     # Update config
     config.set_active_project(project_manager.current_project)
     
-    trainer = DarkCircleTrainer()
+    trainer = ModelTrainer()
     
     # Prepare data
     success = trainer.prepare_training_data(roboflow_export_dir=manual_dir)
@@ -503,9 +503,9 @@ def train_final_model():
     # Update config
     config.set_active_project(project_manager.current_project)
     
-    from train_model import DarkCircleTrainer
+    from train_model import ModelTrainer
     
-    trainer = DarkCircleTrainer()
+    trainer = ModelTrainer()
     
     # Training parameters
     train_cfg = cfg.get("training", {})
@@ -646,7 +646,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 import config
-from train_model import DarkCircleTrainer
+from train_model import ModelTrainer
 
 def main():
     print("=" * 60)
@@ -668,7 +668,7 @@ def main():
     
     response = input("\\nStart training? (y/n): ")
     if response.lower() == 'y':
-        trainer = DarkCircleTrainer()
+        trainer = ModelTrainer()
         trainer.train(epochs=config.INITIAL_TRAINING_EPOCHS)
         
         response = input("\\nRun evaluation? (y/n): ")
