@@ -663,7 +663,7 @@ python main.py
 - Weights: {model_cfg['weights']}
 
 ## After Training
-Best model: `models/dark_circle_seg/train_*/weights/best.pt`
+Best model: `models/yolo_training/train_*/weights/best.pt`
 '''
     
     with open(export_dir / "README.md", 'w', encoding='utf-8') as f:

@@ -52,7 +52,7 @@ class ClassManager:
     
     def __init__(self, classes: Dict[int, str] = None, classes_file: Path = None):
         self.classes_file = classes_file
-        self.classes = classes if classes else {0: "dark_circle"}
+        self.classes = classes if classes else {0: "object"}
         
         if classes_file and classes_file.exists():
             self.load_classes()
@@ -67,7 +67,7 @@ class ClassManager:
                         self.classes[i] = name
         
         if not self.classes:
-            self.classes = {0: "dark_circle"}
+            self.classes = {0: "object"}
     
     def save_classes(self):
         """Save classes to file"""
@@ -291,7 +291,7 @@ def load_project_for_annotation(project_name: str) -> Tuple[str, gr.Dropdown]:
         (state.annotations_dir / "labels").mkdir(parents=True, exist_ok=True)
     
     # Update class manager
-    classes = {int(k): v for k, v in cfg.get("classes", {0: "dark_circle"}).items()}
+    classes = {int(k): v for k, v in cfg.get("classes", {0: "object"}).items()}
     classes_file = project_path / "classes.txt"
     class_manager = ClassManager(classes=classes, classes_file=classes_file)
     class_manager.save_classes()
@@ -684,7 +684,7 @@ def add_new_class(class_name: str) -> Tuple[gr.Dropdown, str]:
     global class_manager
     
     if class_manager is None:
-        return gr.Dropdown(choices=[("dark_circle", 0)]), "❌ Select a project first!"
+        return gr.Dropdown(choices=[("object", 0)]), "❌ Select a project first!"
     
     if not class_name or not class_name.strip():
         return gr.Dropdown(choices=class_manager.get_choices()), "❌ Class name cannot be empty!"
@@ -801,7 +801,7 @@ def create_annotation_gui():
                 gr.Markdown("### 🎨 Class Selection")
                 
                 class_dropdown = gr.Dropdown(
-                    choices=class_manager.get_choices() if class_manager else [("dark_circle", 0)],
+                    choices=class_manager.get_choices() if class_manager else [("object", 0)],
                     value=0,
                     label="Class"
                 )
@@ -809,7 +809,7 @@ def create_annotation_gui():
                 with gr.Row():
                     new_class_input = gr.Textbox(
                         label="New Class",
-                        placeholder="e.g., wrinkle",
+                        placeholder="e.g., car, bag",
                         scale=3
                     )
                     add_class_btn = gr.Button("➕", size="sm", scale=1)

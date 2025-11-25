@@ -1,179 +1,286 @@
-# 🎯 Auto-Annotation & Training Tool
+# 🎯 SmartAnnotator - Auto-Annotation & Training Tool
 
-A comprehensive semi-supervised learning pipeline for object segmentation, featuring automatic annotation with trained models, manual annotation GUI, and multi-project support.
+A comprehensive semi-supervised learning pipeline for object segmentation, detection, and classification. Annotate thousands of images automatically with just 200-300 manual labels!
 
 ![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
 ![YOLO](https://img.shields.io/badge/YOLO-v11%20%7C%20v8-green.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-## 📋 Table of Contents
+---
 
-- [Features](#-features)
-- [Installation](#-installation)
-- [Quick Start](#-quick-start)
-- [Workflow Overview](#-workflow-overview)
-- [Project Structure](#-project-structure)
-- [Usage Guide](#-usage-guide)
-- [Configuration](#-configuration)
-- [Server Training](#-server-training)
-- [Contributing](#-contributing)
-
-## ✨ Features
-
-### 🔹 Multi-Project Support
-- Create and manage multiple datasets/projects
-- Each project has its own configuration, classes, and models
-- Easy switching between projects
-
-### 🔹 Model Flexibility
-- **YOLOv11** - Latest YOLO architecture
-- **YOLOv8** - Stable and well-tested
-- **ResNet** - For classification tasks
-- Multiple sizes: Nano, Small, Medium, Large, XLarge
-
-### 🔹 Task Types
-- **Segmentation** - Pixel-level object masks
-- **Detection** - Bounding box localization
-- **Classification** - Image-level categorization
-
-### 🔹 Semi-Supervised Learning Pipeline
-1. Manual annotation (small dataset)
-2. Initial model training
-3. Auto-annotation (large dataset)
-4. Human review & correction
-5. Final model training
-
-### 🔹 Smart Validation
-- Minimum detection threshold (e.g., 2 eyes for dark circles)
-- Confidence-based filtering
-- Invalid images saved separately for review
-
-## 🚀 Installation
-
-### Prerequisites
-- Python 3.8 or higher
-- CUDA-compatible GPU (recommended for training)
-
-### Setup
+## 🚀 Quick Start (30 seconds)
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/auto-annotation-tool.git
-cd auto-annotation-tool
+# 1. Clone the repo
+git clone https://github.com/yourusername/SmartAnnotator.git
+cd SmartAnnotator
 
-# Create virtual environment (optional but recommended)
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-
-# Install dependencies
+# 2. Install dependencies
 pip install -r requirements.txt
-```
 
-### Requirements
-```
-ultralytics>=8.0.0
-opencv-python>=4.5.0
-numpy>=1.21.0
-gradio>=4.0.0
-tqdm>=4.60.0
-pyyaml>=6.0
-```
-
-## 🏃 Quick Start
-
-```bash
-# Run the main application
+# 3. Run
 python main.py
 ```
 
-This will launch an interactive menu:
+---
+
+## 📋 Table of Contents
+
+- [What Does This Tool Do?](#-what-does-this-tool-do)
+- [Installation](#-installation)
+- [Step-by-Step Guide](#-step-by-step-guide)
+- [How Auto-Annotation Works](#-how-auto-annotation-works)
+- [FAQ](#-faq)
+- [Project Structure](#-project-structure)
+
+---
+
+## 🤔 What Does This Tool Do?
+
+**Problem:** Manually labeling 10,000 images takes days.
+
+**Solution:** 
+1. Manually label only **200-300 images**
+2. Train an **initial model** with these labels
+3. Let the model **automatically annotate** the rest
+4. Train the final model with all data
+
+**Result:** Days of work reduced to hours! ⚡
+
+---
+
+## 🔧 Installation
+
+### Requirements
+- Python 3.8+
+- GPU (recommended, but not required)
+
+### Step 1: Create Environment (Recommended)
+
+```bash
+# With Conda
+conda create -n annotation python=3.10
+conda activate annotation
+
+# Or with venv
+python -m venv venv
+venv\Scripts\activate  # Windows
+source venv/bin/activate  # Linux/Mac
+```
+
+### Step 2: Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### Step 3: Run
+
+```bash
+python main.py
+```
+
+---
+
+## 📖 Step-by-Step Guide
+
+### 🔵 STEP 1: Create a Project
 
 ```
-📋 MAIN MENU
-============================================================
-
-🎯 Active Project: None
-
-    ━━━━━━━━━━ PROJECT MANAGEMENT ━━━━━━━━━━
-    [1] 📁 Project Management (Create/Load/Edit)
-    
-    ━━━━━━━━━━ ANNOTATION ━━━━━━━━━━
-    [2] 📥 Import Data (Raw images / Annotations)
-    [3] ✏️ Manual Annotation GUI (Gradio)
-    [4] 🤖 Start Auto Annotation
-    [5] 📦 Prepare Final Dataset
-    
-    ━━━━━━━━━━ MODEL TRAINING ━━━━━━━━━━
-    [6] 🚀 Train Initial Model (with manual annotations)
-    [7] 🎯 Train Final Model
-    [8] 🖥️ Server Export (ZIP)
-    
-    ━━━━━━━━━━ INFO ━━━━━━━━━━
-    [9] 📊 Show Project Status
-    [10] ⚙️ Project Settings
-
-    [0] 🚪 Exit
+python main.py
+→ Select [1] Project Management
+→ Select [1] Create New Project
 ```
 
-## 📊 Workflow Overview
+You'll be asked:
+| Question | Example Answer | Description |
+|----------|----------------|-------------|
+| Project name | `car_detection` | Name of your project |
+| Model | `[1] YOLOv11` | Model to use |
+| Task | `[1] Detection` or `[3] Segmentation` | Task type |
+| Size | `[3] Medium` | Model size |
+| Split | `[1] Automatic` | Train/Val/Test ratios |
+| Classes | `car, person` | Classes to detect |
+| Min Detections | `1` | Minimum detections per image |
+
+### 🔵 STEP 2: Import Images
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    SEMI-SUPERVISED PIPELINE                      │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐       │
-│  │  1. CREATE   │───▶│  2. MANUAL   │───▶│  3. INITIAL  │       │
-│  │   PROJECT    │    │  ANNOTATION  │    │   TRAINING   │       │
-│  └──────────────┘    └──────────────┘    └──────────────┘       │
-│         │                   │                   │                │
-│         ▼                   ▼                   ▼                │
-│  • Select model      • Use Gradio GUI    • Train with           │
-│  • Choose task       • Draw polygons       small dataset        │
-│  • Define classes    • 200-300 samples   • Get initial model    │
-│                                                                  │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐       │
-│  │   6. FINAL   │◀───│  5. PREPARE  │◀───│   4. AUTO    │       │
-│  │   TRAINING   │    │   DATASET    │    │  ANNOTATION  │       │
-│  └──────────────┘    └──────────────┘    └──────────────┘       │
-│         │                   │                   │                │
-│         ▼                   ▼                   ▼                │
-│  • Train with        • Merge manual      • Use trained model    │
-│    full dataset        + auto            • Annotate thousands   │
-│  • Export model      • Split train/val   • Filter invalid       │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
+→ Select [2] Import Data
+→ Select [1] Import raw images
+→ Enter the path to your image folder
 ```
+
+Example: `C:\Users\john\Desktop\my_images`
+
+### 🔵 STEP 3: Manual Annotation (200-300 images)
+
+```
+→ Select [3] Manual Annotation GUI
+→ Browser opens at http://localhost:7861
+```
+
+**How to Use the GUI:**
+1. Select your project from the left panel and click **"Load Project"**
+2. Click **"Project Images"** to load images
+3. **Click on the image** to draw polygon points
+4. To complete the polygon, **click on the start point** (white ring)
+5. Click **"Save"** or **"Save →"** to save and go to next
+
+> 💡 **Tip:** Label at least 200-300 images. More = better model!
+
+### 🔵 STEP 4: Train Initial Model
+
+```
+→ Select [6] Train Initial Model
+→ Confirm the number of epochs (default: 100)
+→ Training starts...
+```
+
+⏱️ **Duration:** 30 minutes - 2 hours depending on GPU
+
+### 🔵 STEP 5: Auto-Annotation ⭐
+
+```
+→ Select [4] Start Auto Annotation
+→ Confirm
+→ Model automatically labels all images
+```
+
+**What happens:**
+- ✅ Valid images → `auto_annotations/images/` and `labels/`
+- ❌ Invalid images → `auto_annotations/unvalid/`
+- 📊 Statistics are displayed
+
+### 🔵 STEP 6: Prepare Final Dataset
+
+```
+→ Select [5] Prepare Final Dataset
+→ Manual + Auto annotations are merged
+→ Split into Train/Val/Test
+```
+
+### 🔵 STEP 7: Train Final Model
+
+```
+→ Select [7] Train Final Model
+→ Enter number of epochs (e.g., 150)
+→ Training starts...
+```
+
+🎉 **Done!** Best model saved at: `projects/PROJECT_NAME/models/`
+
+---
+
+## 🤖 How Auto-Annotation Works
+
+### Workflow
+
+```
+┌──────────────────┐
+│  Trained Model   │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐     ┌─────────────────┐
+│   Raw Images     │────▶│  Model Analysis │
+│   (1000+ images) │     │                 │
+└──────────────────┘     └────────┬────────┘
+                                  │
+                    ┌─────────────┴─────────────┐
+                    │                           │
+                    ▼                           ▼
+           ┌───────────────┐          ┌───────────────┐
+           │   VALID ✅     │          │  INVALID ❌    │
+           │               │          │               │
+           │ • Min detection│          │ • Few detects │
+           │   met          │          │ • Low confid. │
+           │ • High confid. │          │               │
+           └───────┬───────┘          └───────┬───────┘
+                   │                          │
+                   ▼                          ▼
+           auto_annotations/           auto_annotations/
+           ├── images/                 └── unvalid/
+           └── labels/
+```
+
+### Minimum Detection Setting
+
+This setting determines **how many objects must be detected** in an image for it to be valid:
+
+| Min Detection | Use Case |
+|---------------|----------|
+| `1` | Single object detection (car, dog, etc.) |
+| `2` | Paired objects (two eyes, etc.) |
+| `3+` | Multiple objects required |
+
+**To Change This Setting:**
+```
+→ Select [10] Project Settings
+→ Select [3] Change annotation settings
+→ Enter Min Detections value
+```
+
+### Confidence Threshold
+
+- **0.5** (default): Medium confidence, more detections
+- **0.7**: High confidence, fewer but more accurate detections
+- **0.3**: Low confidence, many detections (may be noisy)
+
+---
+
+## ❓ FAQ
+
+### "Select a project first!" error
+➡️ First create a project: **[1] Project Management** → **[1] Create New Project**
+
+### How many images should I label?
+➡️ Minimum **200-300 images** recommended. More = better model.
+
+### Does it work without GPU?
+➡️ Yes, but training takes much longer. 100 epochs on CPU = 5-10 hours.
+
+### What does Min Detection do?
+➡️ Sets minimum objects required per image. E.g., `min=2` means images with only 1 detection go to `unvalid/` folder.
+
+### What if auto-labels are wrong?
+➡️ Check `auto_annotations/visualizations/` folder for visual review. Delete incorrect ones.
+
+### Where is the model saved?
+➡️ `projects/PROJECT_NAME/models/latest_model.pt`
+
+### I want to train on a server
+➡️ Use **[8] Server Export (ZIP)** to export all files as a ZIP.
+
+---
 
 ## 📁 Project Structure
 
 ```
-project_root/
-├── main.py                 # Main entry point
-├── config.py               # Global configuration
-├── project_manager.py      # Multi-project management
-├── annotation_tool.py      # Gradio-based manual annotation GUI
-├── auto_annotate.py        # Automatic annotation engine
-├── train_model.py          # Model training logic
-├── prepare_final_dataset.py# Dataset preparation utilities
+SmartAnnotator/
+├── main.py                 # Main menu
+├── config.py               # Global settings
+├── project_manager.py      # Project management
+├── annotation_tool.py      # Manual annotation GUI
+├── auto_annotate.py        # Auto annotation engine
+├── train_model.py          # Model training
+├── prepare_final_dataset.py# Dataset preparation
 ├── utils.py                # Helper functions
 ├── requirements.txt        # Python dependencies
-├── README.md               # This file
 │
 └── projects/               # All projects stored here
     └── my_project/
-        ├── project_config.json  # Project configuration
+        ├── project_config.json  # Project settings
         ├── classes.txt          # Class definitions
-        ├── raw_images/          # Unlabeled images
+        ├── raw_images/          # Raw unlabeled images
         ├── manual_annotations/  # Manual labels
         │   ├── images/
         │   └── labels/
         ├── auto_annotations/    # Auto-generated labels
-        │   ├── images/
-        │   ├── labels/
-        │   ├── visualizations/  # Annotation previews
-        │   └── unvalid/         # Rejected images
+        │   ├── images/          # Valid images
+        │   ├── labels/          # Label files
+        │   ├── visualizations/  # Visual previews
+        │   └── unvalid/         # Invalid images
         ├── final_dataset/       # Ready for training
         │   ├── train/
         │   ├── val/
@@ -183,101 +290,22 @@ project_root/
             └── latest_model.pt
 ```
 
-## 📖 Usage Guide
+---
 
-### Step 1: Create a Project
-
-```bash
-python main.py
-# Select [1] Project Management
-# Select [1] Create New Project
-```
-
-You'll be prompted to configure:
-- **Project name**: e.g., `dark_circle_detection`
-- **Model family**: YOLOv11, YOLOv8, or ResNet
-- **Task type**: Segmentation, Detection, or Classification
-- **Model size**: Nano to XLarge
-- **Train/Val/Test split**: Automatic or manual ratios
-- **Classes**: e.g., `dark_circle, wrinkle, eyebag`
-
-### Step 2: Import Raw Images
-
-```bash
-# Select [2] Import Data
-# Select [1] Import raw images
-# Enter path to your image folder
-```
-
-### Step 3: Manual Annotation (Gradio GUI)
-
-```bash
-# Select [3] Manual Annotation GUI
-# Opens browser at http://localhost:7861
-```
-
-**GUI Features:**
-- Load project and images
-- Click to draw polygon points
-- Click on start point (white ring) to complete
-- Zoom slider for detail work
-- Add new classes dynamically
-- Undo/Clear functionality
-- Save & Next workflow
-
-### Step 4: Train Initial Model
-
-```bash
-# Select [6] Train Initial Model
-# Confirm training parameters
-# Training starts automatically
-```
-
-### Step 5: Auto Annotation
-
-```bash
-# Select [4] Start Auto Annotation
-# Model annotates all raw images
-# Valid images: saved to labels/
-# Invalid images: saved to unvalid/
-```
-
-**Validation Rules:**
-- Minimum detections required (default: 2)
-- Confidence threshold filtering
-- Low confidence items flagged for review
-
-### Step 6: Prepare Final Dataset
-
-```bash
-# Select [5] Prepare Final Dataset
-# Merges manual + auto annotations
-# Splits into train/val/test
-```
-
-### Step 7: Train Final Model
-
-```bash
-# Select [7] Train Final Model
-# Enter number of epochs
-# Training with full dataset
-```
-
-## ⚙️ Configuration
-
-### Project Configuration (project_config.json)
+## ⚙️ Project Configuration (project_config.json)
 
 ```json
 {
-  "project_name": "dark_circle_v1",
+  "project_name": "car_detection",
   "model": {
     "family": "yolov11",
-    "task": "segmentation",
+    "task": "detection",
     "size": "m",
-    "weights": "yolo11m-seg.pt"
+    "weights": "yolo11m.pt"
   },
   "classes": {
-    "0": "dark_circle"
+    "0": "car",
+    "1": "person"
   },
   "split": "auto",
   "training": {
@@ -287,53 +315,15 @@ You'll be prompted to configure:
   },
   "annotation": {
     "confidence_threshold": 0.5,
-    "min_detections": 2
+    "iou_threshold": 0.45,
+    "min_detections": 1
   }
 }
 ```
 
-### Model Sizes
+---
 
-| Size | Name | Speed | Accuracy | Use Case |
-|------|------|-------|----------|----------|
-| n | Nano | ⚡⚡⚡⚡⚡ | ⭐ | Edge devices |
-| s | Small | ⚡⚡⚡⚡ | ⭐⭐ | Mobile |
-| m | Medium | ⚡⚡⚡ | ⭐⭐⭐ | Balanced |
-| l | Large | ⚡⚡ | ⭐⭐⭐⭐ | High accuracy |
-| x | XLarge | ⚡ | ⭐⭐⭐⭐⭐ | Maximum accuracy |
-
-### Split Ratios (Automatic)
-
-| Dataset Size | Train | Val | Test |
-|--------------|-------|-----|------|
-| < 1000 images | 70% | 20% | 10% |
-| 1000-5000 images | 80% | 10% | 10% |
-| > 5000 images | 85% | 10% | 5% |
-
-## 🖥️ Server Training
-
-For training on a GPU server:
-
-```bash
-# Select [8] Server Export (ZIP)
-# Enter export name
-# ZIP file created with all necessary files
-```
-
-**On Server:**
-```bash
-unzip project_server.zip
-cd project_server
-pip install -r requirements.txt
-python main.py
-```
-
-After training, the best model is saved at:
-```
-models/dark_circle_seg/train_YYYYMMDD_HHMMSS/weights/best.pt
-```
-
-## 📝 Label Format
+## 🏷️ Label Formats
 
 ### YOLO Segmentation Format
 ```
@@ -347,51 +337,41 @@ models/dark_circle_seg/train_YYYYMMDD_HHMMSS/weights/best.pt
 0 0.5 0.5 0.2 0.3
 ```
 
-## 🔧 Advanced Usage
+---
 
-### Custom Confidence Threshold
+## 📊 Model Sizes
 
-```python
-from auto_annotate import AutoAnnotator
+| Size | Name | Speed | Accuracy | Use Case |
+|------|------|-------|----------|----------|
+| `n` | Nano | ⚡⚡⚡⚡⚡ | ⭐ | Mobile/Edge |
+| `s` | Small | ⚡⚡⚡⚡ | ⭐⭐ | Fast inference |
+| `m` | Medium | ⚡⚡⚡ | ⭐⭐⭐ | Balanced (recommended) |
+| `l` | Large | ⚡⚡ | ⭐⭐⭐⭐ | High accuracy |
+| `x` | XLarge | ⚡ | ⭐⭐⭐⭐⭐ | Maximum accuracy |
 
-annotator = AutoAnnotator(model_path, min_detections=2)
-annotator.annotate_batch(
-    images_dir=Path("./images"),
-    confidence_threshold=0.7,  # Higher = more strict
-    save_visualizations=True
-)
-```
-
-### Programmatic Training
-
-```python
-from train_model import DarkCircleTrainer
-
-trainer = DarkCircleTrainer()
-trainer.prepare_training_data(roboflow_export_dir=Path("./data"))
-trainer.train(epochs=150, batch_size=32)
-trainer.evaluate()
-```
+---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. Fork the repo
+2. Create feature branch (`git checkout -b feature/NewFeature`)
+3. Commit changes (`git commit -m 'Add new feature'`)
+4. Push (`git push origin feature/NewFeature`)
+5. Open Pull Request
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - See [LICENSE](LICENSE) for details.
+
+---
 
 ## 🙏 Acknowledgments
 
-- [Ultralytics](https://github.com/ultralytics/ultralytics) for YOLO implementation
-- [Gradio](https://gradio.app/) for the annotation GUI framework
-- [OpenCV](https://opencv.org/) for image processing
+- [Ultralytics](https://github.com/ultralytics/ultralytics) - YOLO implementation
+- [Gradio](https://gradio.app/) - GUI framework
+- [OpenCV](https://opencv.org/) - Image processing
 
 ---
 

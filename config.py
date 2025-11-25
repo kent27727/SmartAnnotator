@@ -78,7 +78,7 @@ def set_active_project(project_name: str):
     YOLO_SEG_MODEL = model_config.get("weights", f"yolo11{YOLO_MODEL_SIZE}-seg.pt")
     
     # Update class settings
-    CLASSES = {int(k): v for k, v in config.get("classes", {0: "dark_circle"}).items()}
+    CLASSES = {int(k): v for k, v in config.get("classes", {0: "object"}).items()}
     NUM_CLASSES = len(CLASSES)
     
     # Annotation settings
@@ -170,7 +170,7 @@ LOW_CONFIDENCE_THRESHOLD = 0.7
 
 # Classes to be labeled
 CLASSES = {
-    0: "dark_circle"
+    0: "object"
 }
 
 # Number of classes

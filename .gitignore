@@ -27,19 +27,8 @@
 *.mkv
 *.wmv
 
-# Project datasets (everything inside projects folder except configs)
-projects/*/raw_images/
-projects/*/auto_annotations/
-projects/*/manual_annotations/
-projects/*/final_dataset/
-projects/*/models/
-projects/*/exports/
-projects/*/temp/
-
-# Keep only project configuration files
-!projects/*/project_config.json
-!projects/*/classes.txt
-!projects/*/.gitkeep
+# Projects folder - each user creates their own projects
+projects/
 
 # Root level dataset folders (if any)
 raw_images/

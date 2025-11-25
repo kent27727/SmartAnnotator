@@ -202,7 +202,7 @@ class DarkCircleTrainer:
         
         # Start training
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        project_name = config.MODELS_DIR / "dark_circle_seg"
+        project_name = config.MODELS_DIR / "yolo_training"
         run_name = f"train_{timestamp}"
         
         print(f"\n🏃 Training starting...")

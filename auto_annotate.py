@@ -40,7 +40,7 @@ class AutoAnnotator:
         """
         Args:
             model_path: Trained model path
-            min_detections: Minimum detection count (e.g., 2 = two eyes required)
+            min_detections: Minimum detection count per image (default: 1)
         """
         if model_path is None:
             model_path = config.MODELS_DIR / "latest_model.pt"
@@ -57,14 +57,14 @@ class AutoAnnotator:
         
         # Minimum detection count - from project config or parameter
         if min_detections is not None:
-            self.min_detections = min_detections
+            self.min_detections = max(1, min_detections)  # Minimum 1
         else:
             # Get from project config
             project_config = config.get_active_project_config()
             if project_config:
-                self.min_detections = project_config.get("annotation", {}).get("min_detections", 2)
+                self.min_detections = project_config.get("annotation", {}).get("min_detections", 1)
             else:
-                self.min_detections = 2  # Default: 2 eyes
+                self.min_detections = 1  # Default: 1 detection
         
         # Statistics
         self.stats = {
@@ -72,7 +72,7 @@ class AutoAnnotator:
             'high_confidence': 0,
             'low_confidence': 0,
             'no_detection': 0,
-            'single_detection': 0,  # Single detection (invalid)
+            'insufficient_detection': 0,  # Less than min_detections
             'errors': 0
         }
         
@@ -277,7 +277,7 @@ class AutoAnnotator:
                     
                     elif num_det > 0 and num_det < self.min_detections:
                         # Insufficient detections - invalid, copy to unvalid
-                        self.stats['single_detection'] += 1
+                        self.stats['insufficient_detection'] += 1
                         shutil.copy(img_path, unvalid_dir / img_path.name)
                     
                     else:
@@ -311,12 +311,13 @@ class AutoAnnotator:
         print(f"Total Processed: {self.stats['total_processed']}")
         print(f"✅ High Confidence ({self.min_detections}+ detections): {self.stats['high_confidence']}")
         print(f"⚠️ Low Confidence ({self.min_detections}+ detections): {self.stats['low_confidence']} (review needed)")
-        print(f"👁️ Insufficient Detections (< {self.min_detections}): {self.stats['single_detection']}")
+        if self.min_detections > 1:
+            print(f"👁️ Insufficient Detections (< {self.min_detections}): {self.stats['insufficient_detection']}")
         print(f"❌ No Detection: {self.stats['no_detection']}")
         print(f"🔴 Errors: {self.stats['errors']}")
         
         labeled = self.stats['high_confidence'] + self.stats['low_confidence']
-        unlabeled = self.stats['single_detection'] + self.stats['no_detection']
+        unlabeled = self.stats['insufficient_detection'] + self.stats['no_detection']
         
         print(f"\n📁 Labeled: {labeled} images (images/ and labels/)")
         print(f"📁 Unlabeled: {unlabeled} images (unvalid/)")

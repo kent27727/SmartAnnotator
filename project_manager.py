@@ -129,7 +129,7 @@ class ProjectManager:
         
         # 1. Project name
         print("\n1️⃣ PROJECT NAME")
-        print("   Example: dark_circle_v1, eye_detection, test_project")
+        print("   Example: car_detection, product_catalog, my_project")
         
         while True:
             project_name = input("\nProject name: ").strip().lower().replace(" ", "_")
@@ -248,15 +248,39 @@ class ProjectManager:
         print("-" * 40)
         print("   Enter classes to be labeled.")
         print("   Separate multiple classes with comma.")
-        print("   Example: dark_circle")
-        print("   Example: dark_circle, wrinkle, eyebag")
+        print("   Example: car")
+        print("   Example: car, person, bicycle")
         
         classes_input = input("\nClasses: ").strip()
         classes = [c.strip() for c in classes_input.split(",") if c.strip()]
         
         if not classes:
-            classes = ["dark_circle"]
+            classes = ["object"]
             print(f"   Using default: {classes}")
+        
+        # 7. Minimum detections for auto annotation
+        print("\n7️⃣ MINIMUM DETECTIONS (Auto Annotation)")
+        print("-" * 40)
+        print("   How many objects must be detected in an image for it to be valid?")
+        print("   Example: 1 = At least 1 detection required")
+        print("   Example: 2 = At least 2 detections required (e.g., two eyes)")
+        print("   Example: 3 = At least 3 detections required")
+        
+        while True:
+            min_det_input = input("\nMinimum detections (default: 1): ").strip()
+            if not min_det_input:
+                min_detections = 1
+                break
+            try:
+                min_detections = int(min_det_input)
+                if min_detections < 1:
+                    print("❌ Minimum detections must be at least 1!")
+                    continue
+                break
+            except ValueError:
+                print("❌ Please enter a valid number!")
+        
+        print(f"   ✅ Min detections set to: {min_detections}")
         
         # Create project configuration
         config = {
@@ -280,7 +304,7 @@ class ProjectManager:
             "annotation": {
                 "confidence_threshold": 0.5,
                 "iou_threshold": 0.45,
-                "min_detections": 2 if selected_task == "segmentation" else 1
+                "min_detections": min_detections
             }
         }
         
@@ -381,6 +405,7 @@ names: {list(config['classes'].values())}
         print(f"   ├─ Size: {config['model']['size'].upper()}")
         print(f"   ├─ Weights: {config['model']['weights']}")
         print(f"   ├─ Classes: {list(config['classes'].values())}")
+        print(f"   ├─ Min Detections: {config.get('annotation', {}).get('min_detections', 1)}")
         
         if config['split'] == "auto":
             print(f"   └─ Split: Automatic")
