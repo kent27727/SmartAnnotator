@@ -1,0 +1,248 @@
+# ================================================
+# Auto-Annotation & Training Tool - .gitignore
+# ================================================
+# This file ensures only code is uploaded to GitHub
+# Users will add their own datasets and images
+# ================================================
+
+# ====================
+# DATASETS & IMAGES
+# ====================
+
+# All image formats
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.gif
+*.webp
+*.tiff
+*.tif
+*.ico
+
+# Video formats
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wmv
+
+# Project datasets (everything inside projects folder except configs)
+projects/*/raw_images/
+projects/*/auto_annotations/
+projects/*/manual_annotations/
+projects/*/final_dataset/
+projects/*/models/
+projects/*/exports/
+projects/*/temp/
+
+# Keep only project configuration files
+!projects/*/project_config.json
+!projects/*/classes.txt
+!projects/*/.gitkeep
+
+# Root level dataset folders (if any)
+raw_images/
+datasets/
+data/
+images/
+train/
+val/
+test/
+
+# Root level annotation folders
+auto_annotations/
+manual_annotations/
+final_dataset/
+
+# Models folder (trained models)
+models/
+
+# Weird path folder (if accidentally created)
+C__/
+
+# Label txt files in labels directories
+**/labels/*.txt
+labels.cache
+
+# Temporary and cache
+temp/
+cache/
+.cache/
+
+# ====================
+# MODEL FILES
+# ====================
+
+# PyTorch models
+*.pt
+*.pth
+*.ckpt
+
+# ONNX models
+*.onnx
+
+# TensorFlow models
+*.pb
+*.h5
+*.keras
+
+# Other model formats
+*.bin
+*.safetensors
+
+# ====================
+# TRAINING OUTPUTS
+# ====================
+
+# YOLO runs
+runs/
+wandb/
+mlruns/
+
+# TensorBoard
+tensorboard/
+logs/
+
+# Checkpoints
+checkpoints/
+
+# ====================
+# EXPORT & ZIP FILES
+# ====================
+
+# Exported archives
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# Server exports
+*_server/
+
+# ====================
+# PYTHON
+# ====================
+
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ====================
+# IDE & EDITORS
+# ====================
+
+# VS Code
+.vscode/
+
+# PyCharm / IntelliJ
+.idea/
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ====================
+# OS FILES
+# ====================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# ====================
+# TESTING
+# ====================
+
+# Coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# ====================
+# GRADIO
+# ====================
+
+# Gradio flagged outputs
+flagged/
+
+# ====================
+# MISC
+# ====================
+
+# Logs
+*.log
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# mypy
+.mypy_cache/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ====================
+# KEEP THESE FILES
+# ====================
+# Empty directories need .gitkeep
+!.gitkeep
+!*/.gitkeep

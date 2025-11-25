@@ -1,0 +1,35 @@
+# Auto-Annotation & Training Tool
+# Semi-supervised learning pipeline for object segmentation
+
+# Core ML/DL
+ultralytics>=8.3.0          # YOLOv11 support
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Image Processing
+opencv-python>=4.8.0
+Pillow>=10.0.0
+albumentations>=1.3.0       # Data augmentation
+
+# Data handling
+numpy>=1.24.0
+pandas>=2.0.0
+pyyaml>=6.0
+tqdm>=4.65.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Roboflow integration (optional - for direct API access)
+roboflow>=1.1.0
+
+# GUI
+gradio>=4.0.0               # Web-based annotation GUI
+
+# SAM for advanced segmentation (optional but recommended)
+segment-anything>=1.0
+
+# Utilities
+scikit-learn>=1.3.0
+shapely>=2.0.0              # Polygon operations
