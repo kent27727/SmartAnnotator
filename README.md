@@ -52,7 +52,7 @@ python main.py
 ## 🔧 Installation
 
 ### Requirements
-- Python 3.8+
+- Python 3.10+
 - GPU (recommended, but not required)
 
 ### Step 1: Create Environment (Recommended)
@@ -375,4 +375,3 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-**Made with ❤️ for the computer vision community**
