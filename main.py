@@ -280,15 +280,33 @@ def train_initial_model():
     print("🚀 INITIAL MODEL TRAINING")
     print("="*50)
     
-    # Manual annotation check
+    # Manual annotation check - support both flat and Roboflow structure
     manual_dir = project_path / "manual_annotations"
     
     if cfg["model"]["task"] != "classification":
+        labels_found = False
+        total_labels = 0
+        
+        # Check 1: Flat structure (manual_annotations/labels/)
         labels_dir = manual_dir / "labels"
-        if not labels_dir.exists() or len(list(labels_dir.glob("*.txt"))) == 0:
+        if labels_dir.exists():
+            total_labels += len(list(labels_dir.glob("*.txt")))
+        
+        # Check 2: Roboflow structure (train/labels, valid/labels, test/labels)
+        for split_name in ["train", "valid", "test", "val"]:
+            split_labels = manual_dir / split_name / "labels"
+            if split_labels.exists():
+                total_labels += len(list(split_labels.glob("*.txt")))
+        
+        if total_labels == 0:
             print("❌ Manual annotations not found!")
             print(f"   Import data first: {manual_dir}")
+            print(f"   Expected structure:")
+            print(f"     - {manual_dir}/labels/*.txt (flat)")
+            print(f"     - {manual_dir}/train/labels/*.txt (Roboflow)")
             return
+        
+        print(f"✅ Found {total_labels} label files")
     
     from train_model import ModelTrainer
     
@@ -381,13 +399,14 @@ def run_auto_annotation():
     print(f"   Target: {project_path / 'auto_annotations'}")
     
     # Ask for confidence threshold
-    print(f"\n📊 Confidence Threshold (0.0 - 1.0)")
+    print(f"\n📊 Confidence Threshold (0.001 - 1.0)")
     print(f"   Higher = fewer but more accurate detections")
+    print(f"   Lower = more detections but may include false positives")
     conf_input = input(f"   Confidence threshold [{default_conf}]: ").strip()
     if conf_input:
         try:
             confidence_threshold = float(conf_input)
-            confidence_threshold = max(0.1, min(1.0, confidence_threshold))
+            confidence_threshold = max(0.001, min(1.0, confidence_threshold))
         except ValueError:
             confidence_threshold = default_conf
     else:
@@ -530,12 +549,56 @@ def prepare_for_server():
     project_path = project_manager.get_project_path()
     cfg = project_manager.project_config
     
-    # Final dataset check
+    # Check what data we have
     final_dataset = project_path / "final_dataset"
-    if not final_dataset.exists():
-        print("❌ Final dataset not found!")
-        print("   Prepare final dataset first.")
+    manual_dir = project_path / "manual_annotations"
+    raw_images_dir = project_path / "raw_images"
+    
+    # Check if final_dataset has actual data (not just empty folders)
+    has_final_dataset = False
+    if final_dataset.exists() and (final_dataset / "dataset.yaml").exists():
+        # Check if train folder has actual images
+        train_images = final_dataset / "train" / "images"
+        if train_images.exists():
+            image_count = len(list(train_images.glob("*.jpg"))) + len(list(train_images.glob("*.png")))
+            if image_count > 0:
+                has_final_dataset = True
+                print(f"✅ Final dataset found with {image_count} training images")
+    
+    has_manual_annotations = False
+    manual_image_count = 0
+    has_raw_images = raw_images_dir.exists() and (any(raw_images_dir.glob("*.jpg")) or any(raw_images_dir.glob("*.png")))
+    
+    # Check manual annotations (both flat and Roboflow structure)
+    if manual_dir.exists():
+        # Flat structure
+        if (manual_dir / "labels").exists() and list((manual_dir / "labels").glob("*.txt")):
+            has_manual_annotations = True
+        # Roboflow structure
+        for split_name in ["train", "valid", "test", "val"]:
+            if (manual_dir / split_name / "images").exists():
+                img_count = len(list((manual_dir / split_name / "images").glob("*.jpg")))
+                img_count += len(list((manual_dir / split_name / "images").glob("*.png")))
+                manual_image_count += img_count
+            if (manual_dir / split_name / "labels").exists():
+                if list((manual_dir / split_name / "labels").glob("*.txt")):
+                    has_manual_annotations = True
+    
+    if has_manual_annotations:
+        print(f"✅ Manual annotations found with {manual_image_count} images")
+    
+    # Decide what to include
+    if not has_final_dataset and not has_manual_annotations:
+        print("❌ No dataset found!")
+        print("   Either prepare final dataset first, or import Roboflow annotations.")
         return
+    
+    # If final_dataset is empty/missing but we have manual_annotations, use them directly
+    use_manual_as_dataset = False
+    if not has_final_dataset and has_manual_annotations:
+        print("\n⚠️ Final dataset empty or not found, but manual annotations exist.")
+        print("   Will prepare dataset from manual annotations.")
+        use_manual_as_dataset = True
     
     print("\n" + "="*50)
     print("🖥️ SERVER TRAINING PREPARATION")
@@ -558,9 +621,76 @@ def prepare_for_server():
     
     print(f"\n📦 Preparing files...")
     
-    # 1. Copy final dataset
-    print("   📂 Copying dataset...")
-    shutil.copytree(final_dataset, export_dir / "final_dataset")
+    # 1. Copy dataset (final_dataset or prepare from manual_annotations)
+    print("   📂 Preparing dataset...")
+    
+    if use_manual_as_dataset:
+        # Prepare dataset from manual_annotations (Roboflow format)
+        dest_dataset = export_dir / "final_dataset"
+        dest_dataset.mkdir(parents=True, exist_ok=True)
+        
+        print(f"   📁 Source: {manual_dir}")
+        print(f"   📁 Destination: {dest_dataset}")
+        
+        # Copy Roboflow structure directly, renaming 'valid' to 'val' if needed
+        image_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
+        total_images_copied = 0
+        total_labels_copied = 0
+        
+        for split_name in ["train", "valid", "test", "val"]:
+            src_split = manual_dir / split_name
+            if src_split.exists():
+                # Normalize to 'val' instead of 'valid' for YOLO
+                dest_split_name = "val" if split_name == "valid" else split_name
+                dest_split = dest_dataset / dest_split_name
+                
+                images_copied = 0
+                labels_copied = 0
+                
+                # Copy images
+                src_images = src_split / "images"
+                if src_images.exists():
+                    dest_images = dest_split / "images"
+                    dest_images.mkdir(parents=True, exist_ok=True)
+                    for ext in image_extensions:
+                        for img in src_images.glob(f"*{ext}"):
+                            shutil.copy(img, dest_images / img.name)
+                            images_copied += 1
+                            total_images_copied += 1
+                
+                # Copy labels
+                src_labels = src_split / "labels"
+                if src_labels.exists():
+                    dest_labels = dest_split / "labels"
+                    dest_labels.mkdir(parents=True, exist_ok=True)
+                    for lbl in src_labels.glob("*.txt"):
+                        if lbl.name not in ['classes.txt']:
+                            shutil.copy(lbl, dest_labels / lbl.name)
+                            labels_copied += 1
+                            total_labels_copied += 1
+                
+                print(f"      {split_name}: {images_copied} images, {labels_copied} labels")
+        
+        # Create dataset.yaml
+        class_names = list(cfg['classes'].values())
+        yaml_content = f"""# Dataset YAML for {project_manager.current_project}
+path: .
+train: train/images
+val: val/images
+test: test/images
+
+names:
+"""
+        for i, name in enumerate(class_names):
+            yaml_content += f"  {i}: {name}\n"
+        
+        with open(dest_dataset / "dataset.yaml", 'w', encoding='utf-8') as f:
+            f.write(yaml_content)
+        
+        print(f"   ✅ Dataset prepared: {total_images_copied} images, {total_labels_copied} labels")
+    else:
+        # Copy existing final_dataset
+        shutil.copytree(final_dataset, export_dir / "final_dataset")
     
     # 2. Required files
     print("   📄 Copying Python files...")
@@ -575,11 +705,13 @@ def prepare_for_server():
     # 4. Create server config.py
     model_cfg = cfg["model"]
     train_cfg = cfg.get("training", {})
+    task_type = model_cfg.get('task', 'segmentation')
     
     server_config = f'''"""
 Server Training Configuration
 ==============================
 Project: {project_manager.current_project}
+Task: {task_type.upper()}
 """
 
 from pathlib import Path
@@ -589,16 +721,23 @@ PROJECTS_DIR = PROJECT_DIR
 FINAL_DATASET_DIR = PROJECT_DIR / "final_dataset"
 MODELS_DIR = PROJECT_DIR / "models"
 TEMP_DIR = PROJECT_DIR / "temp"
+MANUAL_ANNOTATIONS_DIR = PROJECT_DIR / "final_dataset"
 
-# Model
+# Model Configuration
+MODEL_TASK = "{task_type}"  # detection, segmentation, classification
+MODEL_FAMILY = "{model_cfg['family']}"  # yolov11, yolov8, resnet
 YOLO_MODEL_SIZE = "{model_cfg['size']}"
-YOLO_SEG_MODEL = "{model_cfg['weights']}"
+YOLO_SEG_MODEL = "{model_cfg['weights']}"  # Used by train_model.py
 
 # Training
 INITIAL_TRAINING_EPOCHS = {train_cfg.get('epochs', 100)}
 BATCH_SIZE = {train_cfg.get('batch_size', 16)}
 IMAGE_SIZE = {train_cfg.get('image_size', 640)}
 LEARNING_RATE = {train_cfg.get('learning_rate', 0.01)}
+
+# Minimum samples
+MIN_SAMPLES_FOR_TRAINING = 20
+RECOMMENDED_SAMPLES = 100
 
 # Classes
 CLASSES = {cfg['classes']}
@@ -626,6 +765,7 @@ def get_dataset_yaml_path():
     return FINAL_DATASET_DIR / "dataset.yaml"
 
 def print_config():
+    print("Task:", MODEL_TASK)
     print("Model:", YOLO_SEG_MODEL)
     print("Epochs:", INITIAL_TRAINING_EPOCHS)
     print("Batch Size:", BATCH_SIZE)
@@ -639,6 +779,7 @@ def print_config():
 Server Training Script
 ======================
 Project: {project_manager.current_project}
+Task: {task_type.upper()}
 """
 
 import sys
@@ -652,6 +793,8 @@ def main():
     print("=" * 60)
     print("🎯 {project_manager.current_project.upper()} - SERVER TRAINING")
     print("=" * 60)
+    print(f"Task: {{config.MODEL_TASK.upper()}}")
+    print(f"Model: {{config.YOLO_SEG_MODEL}}")
     
     config.create_directories()
     

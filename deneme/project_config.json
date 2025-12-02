@@ -1,0 +1,26 @@
+{
+  "project_name": "eyefinelines_annotated",
+  "created_at": "2025-12-02T16:06:31.021779",
+  "model": {
+    "family": "yolov11",
+    "task": "segmentation",
+    "size": "m",
+    "weights": "yolo11m-seg.pt"
+  },
+  "classes": {
+    "0": "eyefineline"
+  },
+  "num_classes": 1,
+  "split": "auto",
+  "training": {
+    "epochs": 100,
+    "batch_size": 16,
+    "image_size": 640,
+    "learning_rate": 0.01
+  },
+  "annotation": {
+    "confidence_threshold": 0.5,
+    "iou_threshold": 0.45,
+    "min_detections": 1
+  }
+}

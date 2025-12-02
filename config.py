@@ -51,7 +51,7 @@ def set_active_project(project_name: str):
     global MODELS_DIR, FINAL_DATASET_DIR, YOLO_MODEL_SIZE, YOLO_SEG_MODEL
     global CLASSES, NUM_CLASSES, CONFIDENCE_THRESHOLD, IOU_THRESHOLD
     global TRAIN_RATIO, VAL_RATIO, TEST_RATIO, BATCH_SIZE, IMAGE_SIZE
-    global INITIAL_TRAINING_EPOCHS
+    global INITIAL_TRAINING_EPOCHS, MODEL_TASK, MODEL_FAMILY
     
     project_path = PROJECTS_DIR / project_name
     config_file = project_path / "project_config.json"
@@ -74,6 +74,8 @@ def set_active_project(project_name: str):
     
     # Update model settings
     model_config = config.get("model", {})
+    MODEL_TASK = model_config.get("task", "segmentation")
+    MODEL_FAMILY = model_config.get("family", "yolov11")
     YOLO_MODEL_SIZE = model_config.get("size", "m")
     YOLO_SEG_MODEL = model_config.get("weights", f"yolo11{YOLO_MODEL_SIZE}-seg.pt")
     
@@ -120,12 +122,18 @@ def get_active_project_path():
 # MODEL SETTINGS
 # ============================================
 
+# Model task type: 'detection', 'segmentation', 'classification'
+MODEL_TASK = "segmentation"
+
+# Model family: 'yolov11', 'yolov8', 'resnet'
+MODEL_FAMILY = "yolov11"
+
 # YOLOv11 model size: 'n', 's', 'm', 'l', 'x'
 # n = nano (fastest, least accurate)
 # x = extra large (slowest, most accurate)
 YOLO_MODEL_SIZE = "m"  # Medium - balanced
 
-# Segmentation model name
+# Model weights (auto-generated based on task and size)
 YOLO_SEG_MODEL = f"yolo11{YOLO_MODEL_SIZE}-seg.pt"
 
 # ============================================
