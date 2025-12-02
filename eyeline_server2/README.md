@@ -1,4 +1,4 @@
-# eyefinelines_annotated - Server Training
+# eyeline - Server Training
 
 ## Setup
 ```bash

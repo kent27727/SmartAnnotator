@@ -374,13 +374,14 @@ class ProjectManager:
             self._create_dataset_yaml(project_path, config)
     
     def _create_dataset_yaml(self, project_path: Path, config: Dict):
-        """Create dataset YAML file"""
+        """Create dataset YAML file with relative paths (portable)"""
         
         yaml_content = f"""# {config['project_name']} Dataset Configuration
 # Created: {config['created_at']}
 # Task: {config['model']['task']}
 
-path: {project_path / 'final_dataset'}
+# Use relative path for portability (works on any system)
+path: .
 train: train/images
 val: val/images
 test: test/images

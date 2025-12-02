@@ -1,7 +1,7 @@
 """
 Server Training Script
 ======================
-Project: eyefinelines_annotated
+Project: eyeline
 Task: SEGMENTATION
 """
 
@@ -14,7 +14,7 @@ from train_model import ModelTrainer
 
 def main():
     print("=" * 60)
-    print("🎯 EYEFINELINES_ANNOTATED - SERVER TRAINING")
+    print("🎯 EYELINE - SERVER TRAINING")
     print("=" * 60)
     print(f"Task: {config.MODEL_TASK.upper()}")
     print(f"Model: {config.YOLO_SEG_MODEL}")

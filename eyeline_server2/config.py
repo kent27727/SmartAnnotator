@@ -1,7 +1,7 @@
 """
 Server Training Configuration
 ==============================
-Project: eyefinelines_annotated
+Project: eyeline
 Task: SEGMENTATION
 """
 

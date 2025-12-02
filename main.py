@@ -691,6 +691,26 @@ names:
     else:
         # Copy existing final_dataset
         shutil.copytree(final_dataset, export_dir / "final_dataset")
+        
+        # Fix dataset.yaml to use relative path (for portability)
+        dest_dataset = export_dir / "final_dataset"
+        class_names = list(cfg['classes'].values())
+        yaml_content = f"""# Dataset YAML for {project_manager.current_project}
+# Portable version with relative paths
+path: .
+train: train/images
+val: val/images
+test: test/images
+
+names:
+"""
+        for i, name in enumerate(class_names):
+            yaml_content += f"  {i}: {name}\n"
+        
+        with open(dest_dataset / "dataset.yaml", 'w', encoding='utf-8') as f:
+            f.write(yaml_content)
+        
+        print(f"   ✅ Dataset copied and dataset.yaml fixed for portability")
     
     # 2. Required files
     print("   📄 Copying Python files...")
